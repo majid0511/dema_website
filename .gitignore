@@ -9,7 +9,7 @@ dist/
 
 # Local env files
 .env
-.env.*
+
 
 # Firebase local files
 .firebase/
