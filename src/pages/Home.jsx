@@ -9,6 +9,7 @@ import SectionHeader    from '../components/SectionHeader';
 import AnnouncementCard from '../components/AnnouncementCard';
 import ArticleCard      from '../components/ArticleCard';
 import EventCard        from '../components/EventCard';
+import useSEO from '../hooks/useSEO';
 
 const QUICK_MENU = [
   { icon: '📢', label: 'Pengumuman',  path: '/pengumuman',    color: 'bg-blue-50   text-blue-700' },
@@ -68,6 +69,11 @@ export default function HomePage() {
   }, []);
 
   return (
+    <>
+      {useSEO({
+        title: siteConfig.heroTitle,
+        description: siteConfig.heroSubtitle,
+      })}
     <PageTransition>
 
       {/* ═══ HERO ═══ */}
@@ -251,5 +257,6 @@ export default function HomePage() {
       </section>
 
     </PageTransition>
+    </>
   );
 }

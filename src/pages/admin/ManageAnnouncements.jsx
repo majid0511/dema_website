@@ -9,6 +9,8 @@ import { formatDate } from '../../utils/formatters';
 import { useNotify } from '../../utils/useNotify';
 import { useConfirm } from '../../utils/useConfirm';
 import ImageUpload from '../../components/ImageUpload';
+import RichTextEditor from '../../components/RichTextEditor';
+import sendPushNotification from '../../services/sendNotification';
 
 const EMPTY = { title:'', content:'', category:'umum', isUrgent:false, imageUrl:'', publishedAt:'' };
 
@@ -45,6 +47,11 @@ export default function AdminAnnouncements() {
         const id = await create('announcements', data);
         setItems(prev => [{ id, ...data }, ...prev]);
         notifySuccess('Pengumuman ditambahkan', 'Berhasil');
+        sendPushNotification({
+          title: '📢 Pengumuman Baru',
+          body: data.title,
+          url: `/pengumuman/${id}`,
+        });
       }
       closeForm();
     } catch (err) { notifyError('Gagal menyimpan', err.message); }
@@ -96,9 +103,11 @@ export default function AdminAnnouncements() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Isi Pengumuman *</label>
-                <textarea required rows={5} value={form.content}
-                  onChange={e => setForm({...form, content:e.target.value})}
-                  placeholder="Tulis isi pengumuman..." className="input resize-none" />
+                <RichTextEditor
+                  value={form.content}
+                  onChange={html => setForm({...form, content: html})}
+                  placeholder="Tulis isi pengumuman di sini..."
+                />
               </div>
               <ImageUpload folder="announcements" currentUrl={form.imageUrl} label="Gambar (opsional)"
                 onUpload={url => setForm({...form, imageUrl:url})} />

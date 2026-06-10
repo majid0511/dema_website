@@ -19,12 +19,14 @@ Aplikasi web modern, responsif, dan dinamis untuk DEMA yang menampilkan informas
 - **Galeri** - Galeri foto dari berbagai kegiatan
 - **Aspirasi** - Form submissions dari mahasiswa dengan sistem status tracking
 - **Kontak** - Halaman kontak dengan link social media
+- **SEO Dinamis** - Meta tags, Open Graph, dan Twitter Card otomatis per halaman
+- **Push Notifikasi** - Subscribe notifikasi browser untuk artikel & pengumuman baru
 
 ### 🔐 **Admin Dashboard**
 - **Login Admin** - Autentikasi Firebase dengan email & password
 - **Dashboard** - Ringkas statistik dan quick access ke semua modul
-- **Kelola Pengumuman** - CRUD pengumuman dengan publish/unpublish
-- **Kelola Artikel** - Manajemen artikel dengan editor dan preview
+- **Kelola Pengumuman** - CRUD pengumuman dengan publish/unpublish + kirim notifikasi otomatis
+- **Kelola Artikel** - Manajemen artikel dengan **Rich Text Editor** (TipTap) + kirim notifikasi otomatis
 - **Kelola Anggota** - Database anggota BPH dan strukturnya
 - **Kelola Galeri** - Upload dan organisir foto kegiatan
 - **Kelola Program Kerja** - CRUD program dengan status management
@@ -57,6 +59,9 @@ Aplikasi web modern, responsif, dan dinamis untuk DEMA yang menampilkan informas
 | **Build Tool** | Vite | Fast build & dev server |
 | **Date Handling** | date-fns | Date utilities |
 | **HTTP Client** | Axios | API requests |
+| **Rich Text Editor** | TipTap | WYSIWYG editor untuk konten artikel/pengumuman |
+| **SEO** | react-helmet-async | Dynamic meta tags & Open Graph |
+| **Push Notifications** | Firebase Cloud Messaging | Browser push notifications |
 
 ---
 
@@ -76,11 +81,13 @@ dema-website/
 │   │   ├── ConfirmDialog.jsx           # Confirmation modal
 │   │   ├── EventCard.jsx               # Event display card
 │   │   ├── Footer.jsx                  # Site footer
-│   │   ├── ImageUpload.jsx             # Image upload widget
+│   │   ├── ImageUpload.jsx             # Image upload widget (Cloudinary)
 │   │   ├── MemberCard.jsx              # Member profile card
 │   │   ├── Navbar.jsx                  # Navigation bar
+│   │   ├── NotificationBell.jsx        # Subscribe/unsubscribe push notif
 │   │   ├── NotificationDashboard.jsx   # Toast notifications
 │   │   ├── PageTransition.jsx          # Page animation wrapper
+│   │   ├── RichTextEditor.jsx          # TipTap WYSIWYG editor
 │   │   ├── ScrollToTop.jsx             # Scroll to top on navigation
 │   │   └── SectionHeader.jsx           # Section title component
 │   │
@@ -124,26 +131,23 @@ dema-website/
 │   │
 │   ├── hooks/
 │   │   ├── useAuth.js                  # Firebase auth hook
-│   │   ├── useDebounce.js              # Debounce hook
-│   │   ├── useDocument.js              # Single Firestore doc
-│   │   ├── useFirestore.js             # Firestore query hook
-│   │   ├── useLocalStorage.js          # Local storage sync
+│   │   ├── useNotificationSubscribe.js # FCM push notification subscribe
 │   │   ├── useScrollPosition.js        # Scroll position tracking
-│   │   └── useUpload.js                # File upload hook
+│   │   └── useSEO.jsx                  # Dynamic meta tags (helmet)
 │   │
 │   ├── services/
-│   │   └── firestoreService.js         # Firestore CRUD operations
-│   │
-│   ├── lib/
-   │   └── cloudinary.js               # Cloudinary image upload service
+│   │   ├── firestoreService.js         # Firestore CRUD operations
+│   │   └── sendNotification.js         # FCM push notification broadcast
 │   │
 │   └── utils/
 │       ├── formatters.js               # Date/text formatters
-│       ├── notify.js                   # Notification helpers
 │       ├── useConfirm.js               # Confirmation dialog hook
 │       └── useNotify.js                # Toast notification hook
 │
 ├── public/                             # Static assets
+│   └── firebase-messaging-sw.js       # FCM service worker
+├── .env                               # Environment variables
+├── .env.example                       # Environment variable template
 ├── index.html                          # HTML entry point
 ├── package.json                        # Dependencies & scripts
 ├── vite.config.js                      # Vite configuration
@@ -171,22 +175,30 @@ cd dema-website
 
 ### 2. Install Dependencies
 ```bash
-npm install
+npm install --legacy-peer-deps
 ```
 
-### 3. Setup Firebase
-1. Buat Firebase project di https://console.firebase.google.com
-2. Copy konfigurasi Firebase ke `src/firebase/firebaseConfig.js`
-3. Aktifkan Firestore, Storage, dan Authentication (Email/Password)
-4. Atur security rules (lihat `SETUP_GUIDE.md`)
+### 3. Setup Environment Variables
+```bash
+cp .env.example .env
+```
+Edit `.env` dan isi nilai Firebase config serta kredensial lainnya:
+- `VITE_FIREBASE_*` — dari Firebase Console → Project Settings → General → Your apps → Firebase SDK snippet
+- `VITE_FIREBASE_VAPID_KEY` — dari Firebase Console → Cloud Messaging → Web Push certificates
+- `VITE_FCM_SERVER_KEY` — dari Firebase Console → Cloud Messaging → Cloud Messaging API (Legacy)
 
-### 4. Run Development Server
+### 4. Setup Firebase
+1. Buat Firebase project di https://console.firebase.google.com
+2. Aktifkan Firestore, Storage, Authentication (Email/Password), dan Cloud Messaging
+3. Atur security rules (lihat `SETUP_GUIDE.md`)
+
+### 5. Run Development Server
 ```bash
 npm run dev
 ```
 Buka http://localhost:5173 di browser
 
-### 5. Build untuk Production
+### 6. Build untuk Production
 ```bash
 npm run build
 npm run preview
@@ -315,21 +327,32 @@ npm run preview
 }
 ```
 
-#### `contacts`
+#### `fcm_tokens`
 ```json
 {
   "id": "auto-generated",
-  "name": "John Doe",
-  "email": "john@example.com",
-  "subject": "Pertanyaan",
-  "message": "...",
-  "submittedAt": "2025-01-15T10:30:00Z"
+  "token": "fcm-device-token-here",
+  "subscribedAt": "2025-06-10T10:30:00Z",
+  "platform": "Win32"
 }
 ```
 
 ---
 
 ## ⚙️ Configuration
+
+### Environment Variables (`.env`)
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_FIREBASE_API_KEY` | Firebase Web API Key |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Firebase Auth domain |
+| `VITE_FIREBASE_PROJECT_ID` | Firebase Project ID |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Firebase Storage bucket |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase Messaging Sender ID |
+| `VITE_FIREBASE_APP_ID` | Firebase App ID |
+| `VITE_FIREBASE_VAPID_KEY` | Web Push certificate (FCM) |
+| `VITE_FCM_SERVER_KEY` | FCM Legacy Server Key untuk kirim notifikasi |
 
 ### Site Configuration (`src/config/siteConfig.js`)
 Edit file ini untuk mengubah info organisasi di seluruh website:
@@ -388,79 +411,61 @@ colors: {
 
 ## 📤 Image Upload (Cloudinary)
 
-### Configuration
-Cloudinary sudah dikonfigurasi untuk upload image:
-
-```javascript
-// src/lib/cloudinary.js
-export async function uploadImage(file) {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', 'dema_upload');
-  
-  const response = await axios.post(
-    'https://api.cloudinary.com/v1_1/dfmp92e7s/image/upload',
-    formData
-  );
-  
-  return response.data.secure_url;
-}
-```
-
-### Cara Menggunakan
-```javascript
-import { uploadImage } from '@/lib/cloudinary';
-
-// Upload file
-const imageUrl = await uploadImage(file);
-console.log('Image uploaded:', imageUrl);
-```
+Upload image menggunakan komponen `ImageUpload.jsx` yang langsung terintegrasi dengan Cloudinary via Axios.
 
 ### Setup Cloudinary
 1. Buat akun di https://cloudinary.com
 2. Buat upload preset bernama `dema_upload` (unsigned)
-3. Copy Cloud Name dan Update di `cloudinary.js`
-4. Akses:
-   - Cloud Name: `dfmp92e7s` (sudah configured)
-   - Upload Preset: `dema_upload`
+3. Cloud Name: `dfmp92e7s`
+4. Upload Preset: `dema_upload`
+
+### Cara Menggunakan
+```jsx
+import ImageUpload from '../../components/ImageUpload';
+
+<ImageUpload
+  folder="articles"
+  currentUrl={form.thumbnailUrl}
+  onUpload={url => setForm({...form, thumbnailUrl: url})}
+/>
+```
 
 ---
 
 ## 🎣 Custom Hooks
 
+### `useSEO({ title, description, image, url })`
+Menyuntikkan meta tags & Open Graph ke `<head>`:
+```jsx
+import useSEO from '../hooks/useSEO';
+
+const Component = () => {
+  return (
+    <>
+      {useSEO({ title: 'Judul Halaman', description: 'Deskripsi', image: '/img.jpg' })}
+      <PageTransition>...</PageTransition>
+    </>
+  );
+};
+```
+- Fallback ke default dari `siteConfig` jika tidak ada parameter
+- Otomatis menambahkan `og:title`, `og:description`, `og:image`, `og:url`, `twitter:card`
+
+### `useNotificationSubscribe()`
+Subscribe browser push notifications via FCM:
+```javascript
+import useNotificationSubscribe from '../hooks/useNotificationSubscribe';
+
+const { subscribed, loading, subscribe, unsubscribe } = useNotificationSubscribe();
+```
+- Minta izin notifikasi → ambil FCM token → simpan ke koleksi `fcm_tokens` di Firestore
+- Cek duplikasi token agar tidak tersimpan dua kali
+- Dengarkan `onMessage` untuk notifikasi foreground
+
 ### `useAuth()`
 Mengelola autentikasi admin:
 ```javascript
 const { user, loading, login, logout, isAdmin } = useAuth();
-```
-
-### `useFirestore(collectionName, constraints)`
-Query real-time dari Firestore:
-```javascript
-const { data, loading, error } = useFirestore('announcements', [
-  where('isPublished', '==', true),
-  orderBy('publishedAt', 'desc'),
-  limit(5)
-]);
-```
-
-### `useDocument(collectionName, docId)`
-Fetch single document:
-```javascript
-const { data, loading } = useDocument('articles', 'article-id-123');
-```
-
-### `useUpload()`
-Upload file ke Firebase Storage:
-```javascript
-const { upload, progress, error } = useUpload();
-const url = await upload(file, 'announcements');
-```
-
-### `useLocalStorage(key, initialValue)`
-Sync state dengan localStorage:
-```javascript
-const [theme, setTheme] = useLocalStorage('theme', 'light');
 ```
 
 ---
@@ -556,6 +561,55 @@ Upload widget dengan preview (menggunakan Cloudinary):
 ```
 
 **Note**: Component ini menggunakan Cloudinary untuk upload, bukan Firebase Storage.
+
+### RichTextEditor
+WYSIWYG editor berbasis TipTap untuk konten HTML:
+```jsx
+import RichTextEditor from '../../components/RichTextEditor';
+
+<RichTextEditor
+  value={form.content}
+  onChange={html => setForm({...form, content: html})}
+  placeholder="Tulis konten di sini..."
+/>
+```
+- Toolbar: H1-H3, Bold, Italic, Underline, Bullet List, Ordered List, Blockquote, Link, Image
+- Output berupa HTML string
+- Styling toolbar sesuai tema hijau (#165c3d)
+
+### NotificationBell
+Tombol subscribe/unsubscribe push notification di navbar:
+```jsx
+import NotificationBell from './NotificationBell';
+
+<NotificationBell />
+```
+- State aktif: icon bell dengan dot hijau
+- State nonaktif: icon bell abu-abu
+- Handle izin notifikasi browser secara otomatis
+
+### SEO (useSEO hook)
+Setiap halaman publik sudah dilengkapi SEO dinamis:
+- `Home.jsx` — default dari siteConfig
+- `ArticleDetail.jsx` — title, description (strip HTML, 160 char), thumbnail
+- `AnnouncementDetail.jsx` — title, description, image
+
+---
+
+### Service: sendPushNotification
+Broadcast notifikasi ke semua subscriber via FCM:
+```javascript
+import sendPushNotification from '../../services/sendNotification';
+
+await sendPushNotification({
+  title: '📢 Pengumuman Baru',
+  body: 'Judul pengumuman',
+  url: '/pengumuman/id123',
+});
+```
+- Membaca semua token dari koleksi `fcm_tokens` di Firestore
+- Mengirim via FCM Legacy HTTP API (`fcm.googleapis.com/fcm/send`)
+- Sertakan `click_action` agar notifikasi bisa diklik menuju halaman terkait
 
 ---
 

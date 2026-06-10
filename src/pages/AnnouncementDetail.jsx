@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getOne } from '../services/firestoreService';
 import { formatDate } from '../utils/formatters';
 import PageTransition from '../components/PageTransition';
+import useSEO from '../hooks/useSEO';
 
 export default function AnnouncementDetailPage() {
   const { id }          = useParams();
@@ -27,7 +28,17 @@ export default function AnnouncementDetailPage() {
     </div>
   );
 
+  const stripHtml = html => html?.replace(/<[^>]*>/g, '').trim() || '';
+  const metaDesc = stripHtml(ann.content).slice(0, 160);
+
   return (
+    <>
+      {useSEO({
+        title: ann.title,
+        description: metaDesc,
+        image: ann.imageUrl,
+        url: `/pengumuman/${ann.id}`,
+      })}
     <PageTransition>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
 
@@ -83,5 +94,6 @@ export default function AnnouncementDetailPage() {
         </div>
       </div>
     </PageTransition>
+    </>
   );
 }

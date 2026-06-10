@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { siteConfig } from '../config/siteConfig';
 import { HiChevronDown } from 'react-icons/hi';
 import StaggeredMenu from './StaggeredMenu';
+import NotificationBell from './NotificationBell';
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [dropdown, setDropdown] = useState(null);
@@ -113,8 +114,11 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* ─── CTA + StaggeredMenu (mobile) ─── */}
+          {/* ─── CTA + Notif + StaggeredMenu (mobile) ─── */}
           <div className="flex items-center gap-2">
+            <div className="hidden lg:flex items-center">
+              <NotificationBell />
+            </div>
             <Link
               to="/aspirasi"
               className="hidden lg:inline-flex items-center gap-1.5 bg-primary-500 text-white

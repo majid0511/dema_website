@@ -5,6 +5,7 @@ import { db } from '../firebase/firebaseConfig';
 import { formatDate } from '../utils/formatters';
 import PageTransition from '../components/PageTransition';
 import ArticleCard    from '../components/ArticleCard';
+import useSEO from '../hooks/useSEO';
 
 export default function ArticleDetailPage() {
   const { slug }           = useParams();
@@ -46,7 +47,17 @@ export default function ArticleDetailPage() {
     </div>
   );
 
+  const stripHtml = html => html?.replace(/<[^>]*>/g, '').trim() || '';
+  const metaDesc = stripHtml(article.content).slice(0, 160);
+
   return (
+    <>
+      {useSEO({
+        title: article.title,
+        description: metaDesc,
+        image: article.thumbnailUrl,
+        url: `/artikel/${article.slug || article.id}`,
+      })}
     <PageTransition>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
 
@@ -120,5 +131,6 @@ export default function ArticleDetailPage() {
         </div>
       </div>
     </PageTransition>
+    </>
   );
 }
