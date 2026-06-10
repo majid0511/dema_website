@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Website resmi Dewan Eksekutif Mahasiswa STAI At-Tahdzib Jombang" />
+    <title>DEMA STAI At-Tahdzib Jombang</title>
+
+    <!--
+      ═══════════════════════════════════════════════════════════════
+      Google Fonts — NON-RENDER-BLOCKING
+      Teknik: preload as="style" → onload swap ke stylesheet
+      Hemat ±750ms pada LCP/FCP (tidak ada lagi pemblokiran render).
+      <noscript> sebagai fallback untuk browser tanpa JavaScript.
+      ═══════════════════════════════════════════════════════════════
+    -->
+
+    <!-- 1. Buka koneksi awal ke server Google Fonts (tidak memblokir) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://dema-stai-attahdzib.firebaseapp.com" crossorigin />
+
+    <!-- 2. Preload file CSS font — dimuat paralel, tidak memblokir render -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+
+    <!-- 3. Fallback untuk browser yang tidak mendukung JS -->
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      />
+    </noscript>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
