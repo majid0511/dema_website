@@ -42,7 +42,7 @@ export default function Footer() {
     <footer className="bg-primary-600 text-white">
       {/* Gelombang atas */}
       <div className="text-gray-50">
-        <svg viewBox="0 0 1440 60" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 1440 60" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className="w-full">
           <path d="M0 0L1440 0L1440 20C1200 60 960 0 720 30C480 60 240 0 0 30L0 0Z"/>
         </svg>
       </div>

@@ -136,7 +136,7 @@ export default function HomePage() {
 
         {/* Gelombang bawah */}
         <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 1440 70" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
             <path d="M0 70L1440 70L1440 20C1200 70 960 0 720 35C480 70 240 5 0 35L0 70Z" fill="#f9fafb"/>
           </svg>
         </div>

@@ -7,10 +7,12 @@
   html {
     font-family: 'Plus Jakarta Sans', sans-serif;
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
     @apply text-gray-700 antialiased;
+    overflow-x: hidden;
   }
 
   /* Heading default */
@@ -31,12 +33,14 @@
   .btn-primary {
     @apply bg-primary-500 text-white px-6 py-3 rounded-2xl font-semibold
            hover:bg-primary-600 transition-colors shadow-sm active:scale-95;
+    touch-action: manipulation;
   }
 
   /* Tombol outline */
   .btn-outline {
     @apply border-2 border-primary-500 text-primary-600 px-6 py-3 rounded-2xl
            font-semibold hover:bg-primary-50 transition-colors active:scale-95;
+    touch-action: manipulation;
   }
 
   /* Kartu standar */
