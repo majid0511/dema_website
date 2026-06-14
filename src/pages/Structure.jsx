@@ -1,25 +1,103 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { ReactFlow, Controls, Background, applyNodeChanges, applyEdgeChanges, MiniMap } from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import { getAllMembers } from '../services/firestoreService';
 import { DIVISIONS } from '../firebase/collections';
 import PageTransition from '../components/PageTransition';
-import SectionHeader  from '../components/SectionHeader';
-import OrgCard from '../components/OrgCard';
+import MemberNode from '../components/MemberNode';
+
+const nodeTypes = { memberNode: MemberNode };
 
 export default function StructurePage() {
-  const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [nodes, setNodes] = useState([]);
+  const [edges, setEdges] = useState([]);
+
+  const onNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
+  const onEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
 
   useEffect(() => {
-    getAllMembers().then(data => { setMembers(data); setLoading(false); });
+    getAllMembers().then(data => {
+      const bph = data.filter(m => m.isExecutive);
+      const newNodes = [];
+      const newEdges = [];
+      
+      const nodeWidth = 280;
+      const nodeHeight = 120;
+      const bphY = 0;
+      const divY = 200;
+      
+      // 1. BPH
+      bph.forEach((m, i) => {
+        newNodes.push({
+          id: m.id,
+          type: 'memberNode',
+          data: { member: m },
+          position: { x: (i - (bph.length - 1) / 2) * nodeWidth, y: bphY },
+        });
+      });
+      
+      // 2. Divisions
+      const divisions = DIVISIONS.filter(d => d !== 'Umum / BPH');
+      let currentX = -((divisions.length - 1) / 2) * (nodeWidth * 1.5);
+      
+      divisions.forEach((divName) => {
+        const divMembers = data.filter(m => m.division === divName && !m.isExecutive);
+        if (divMembers.length === 0) return;
+        
+        const divNodeId = `div-${divName}`;
+        newNodes.push({
+          id: divNodeId,
+          data: { label: `Divisi ${divName}` },
+          position: { x: currentX + 60, y: divY }, // Offset to center above members
+          style: { 
+            background: '#f8fafc', 
+            border: '2px solid #cbd5e1',
+            borderRadius: '12px',
+            padding: '10px 20px',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            color: '#334155'
+          }
+        });
+        
+        if (bph.length > 0) {
+          newEdges.push({
+            id: `e-${bph[0].id}-${divNodeId}`,
+            source: bph[0].id,
+            target: divNodeId,
+            type: 'smoothstep',
+            animated: true,
+            style: { stroke: '#94a3b8' }
+          });
+        }
+        
+        divMembers.forEach((m, mIdx) => {
+          newNodes.push({
+            id: m.id,
+            type: 'memberNode',
+            data: { member: m },
+            position: { x: currentX, y: divY + 100 + (mIdx * nodeHeight) },
+          });
+          
+          newEdges.push({
+            id: `e-${divNodeId}-${m.id}`,
+            source: mIdx === 0 ? divNodeId : divMembers[mIdx - 1].id,
+            target: m.id,
+            type: 'smoothstep',
+            style: { stroke: '#cbd5e1' }
+          });
+        });
+        
+        currentX += nodeWidth * 1.5;
+      });
+      
+      setNodes(newNodes);
+      setEdges(newEdges);
+      setLoading(false);
+    });
   }, []);
-
-  // Pisahkan BPH (pengurus inti) dan divisi lainnya
-  const bph      = members.filter(m => m.isExecutive);
-  const byDiv    = DIVISIONS.filter(d => d !== 'Umum / BPH').map(div => ({
-    name: div,
-    members: members.filter(m => m.division === div && !m.isExecutive),
-  })).filter(d => d.members.length > 0);
 
   return (
     <PageTransition>
@@ -31,55 +109,44 @@ export default function StructurePage() {
           className="text-white/80 text-lg">DEMA {new Date().getFullYear()} — Kepengurusan Lengkap</motion.p>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 space-y-16">
-
+      <div className="w-full h-[800px] bg-gray-50 border-b border-gray-200">
         {loading ? (
-          <div className="text-center py-20">
-            <div className="animate-spin w-10 h-10 border-4 border-primary-200 border-t-primary-600 rounded-full mx-auto" />
-            <p className="text-gray-400 mt-4">Memuat data pengurus...</p>
+          <div className="flex flex-col items-center justify-center h-full">
+            <div className="animate-spin w-10 h-10 border-4 border-primary-200 border-t-primary-600 rounded-full mb-4" />
+            <p className="text-gray-400">Memuat visual diagram...</p>
+          </div>
+        ) : nodes.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-gray-400">
+            <p className="text-5xl mb-4">👥</p>
+            <p>Data pengurus belum tersedia</p>
           </div>
         ) : (
-          <>
-            {/* ─── BPH / Pengurus Inti ─── */}
-            {bph.length > 0 && (
-              <section>
-                <SectionHeader title="Badan Pengurus Harian" subtitle="Pimpinan utama organisasi" />
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 mt-8">
-                  {bph.map((m, i) => (
-                    <motion.div key={m.id}
-                      initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }}
-                      viewport={{ once:true }} transition={{ delay: i * 0.08 }}>
-                      <OrgCard member={m} variant="bph" />
-                    </motion.div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* ─── Per divisi ─── */}
-            {byDiv.map((div, di) => (
-              <section key={div.name}>
-                <SectionHeader title={`Divisi ${div.name}`} subtitle={`${div.members.length} anggota`} />
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
-                  {div.members.map((m, i) => (
-                    <motion.div key={m.id}
-                      initial={{ opacity:0, y:12 }} whileInView={{ opacity:1, y:0 }}
-                      viewport={{ once:true }} transition={{ delay: i * 0.06 }}>
-                      <OrgCard member={m} variant="division" />
-                    </motion.div>
-                  ))}
-                </div>
-              </section>
-            ))}
-
-            {members.length === 0 && (
-              <div className="text-center py-20 text-gray-400">
-                <p className="text-5xl mb-4">👥</p>
-                <p>Data pengurus belum tersedia</p>
-              </div>
-            )}
-          </>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            nodeTypes={nodeTypes}
+            fitView
+            minZoom={0.2}
+            className=""
+          >
+            <Background color="#ccc" gap={16} />
+            <Controls className="bg-white shadow-md rounded-xl overflow-hidden border border-gray-100" />
+            <MiniMap 
+              nodeColor={(n) => {
+                if (n.type === 'memberNode') return '#10b981';
+                return '#cbd5e1';
+              }} 
+              className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm"
+              maskColor="rgba(0, 0, 0, 0.1)"
+            />
+          </ReactFlow>
         )}
+      </div>
+      
+      <div className="max-w-4xl mx-auto text-center py-8 px-4 text-gray-500 text-sm">
+        💡 Tips: Gunakan scroll mouse atau cubit layar untuk zoom in/out, dan geser untuk menjelajahi struktur.
       </div>
     </PageTransition>
   );

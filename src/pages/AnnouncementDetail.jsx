@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getOne } from '../services/firestoreService';
 import { formatDate } from '../utils/formatters';
 import PageTransition from '../components/PageTransition';
+import ReactionBox from '../components/ReactionBox';
 import useSEO from '../hooks/useSEO';
 
 export default function AnnouncementDetailPage() {
@@ -84,6 +85,9 @@ export default function AnnouncementDetailPage() {
             />
           </div>
         </article>
+
+        {/* Reaction and Comment Box */}
+        <ReactionBox targetId={ann.id} targetType="announcements" />
 
         {/* Tombol kembali */}
         <div className="mt-8">

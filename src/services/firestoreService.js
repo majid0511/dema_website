@@ -103,3 +103,6 @@ export const getAllPrograms = () =>
 
 export const getAllGallery = () =>
   getAll('gallery', [orderBy('eventDate', 'desc')]);
+
+export const getEventAttendees = (eventId) =>
+  getAll(`events/${eventId}/attendees`, [orderBy('checkinTime', 'desc')]);

@@ -37,13 +37,13 @@ export default function Navbar() {
     `px-3 py-2 rounded-lg text-sm font-medium transition-all ${
       isActive
         ? 'text-primary-600 bg-primary-50 font-medium'
-        : 'text-gray-600 hover:text-primary-600 hover:bg-primary-50'
+        : 'text-gray-600 hover:text-primary-600 hover:bg-primary-50:bg-gray-800:text-primary-400'
     }`;
 
   return (
     <nav
-      className={`fixed top-0 inset-x-0 z-50 bg-white transition-shadow duration-300 ${
-        scrolled ? 'shadow-md' : 'border-b border-gray-100'
+      className={`fixed top-0 inset-x-0 z-50 transition-shadow duration-300 ${
+        scrolled ? 'shadow-md bg-white/90 backdrop-blur-md' : 'bg-white border-b border-gray-100'
       }`}
       aria-label="Navigasi utama"
     >
@@ -76,7 +76,7 @@ export default function Navbar() {
                   <button
                     onClick={() => setDropdown(dropdown === item.label ? null : item.label)}
                     className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-gray-600
-                               hover:text-primary-600 hover:bg-primary-50 transition-all"
+                               hover:text-primary-600 hover:bg-primary-50:bg-gray-800:text-primary-400 transition-all"
                     aria-expanded={dropdown === item.label}
                   >
                     {item.label}
@@ -95,7 +95,7 @@ export default function Navbar() {
                             key={c.path} to={c.path}
                             className={({ isActive }) =>
                               `block px-4 py-2.5 text-sm transition-colors ${
-                                isActive ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-50'
+                                isActive ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-50:bg-gray-700'
                               }`
                             }
                           >
@@ -116,7 +116,7 @@ export default function Navbar() {
 
           {/* ─── CTA + Notif + StaggeredMenu (mobile) ─── */}
           <div className="flex items-center gap-2">
-            <div className="hidden lg:flex items-center">
+            <div className="hidden lg:flex items-center gap-2">
               <NotificationBell />
             </div>
             <Link

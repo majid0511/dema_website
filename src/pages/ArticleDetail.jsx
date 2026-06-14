@@ -5,6 +5,7 @@ import { db } from '../firebase/firebaseConfig';
 import { formatDate } from '../utils/formatters';
 import PageTransition from '../components/PageTransition';
 import ArticleCard    from '../components/ArticleCard';
+import ReactionBox    from '../components/ReactionBox';
 import useSEO from '../hooks/useSEO';
 
 export default function ArticleDetailPage() {
@@ -48,7 +49,10 @@ export default function ArticleDetailPage() {
   );
 
   const stripHtml = html => html?.replace(/<[^>]*>/g, '').trim() || '';
-  const metaDesc = stripHtml(article.content).slice(0, 160);
+  const plainText = stripHtml(article.content);
+  const metaDesc = plainText.slice(0, 160);
+  const wordCount = plainText.split(/\s+/).length;
+  const readingTime = Math.ceil(wordCount / 200) || 1;
 
   return (
     <>
@@ -82,6 +86,7 @@ export default function ArticleDetailPage() {
             <div className="flex items-center gap-4 text-sm text-gray-400">
               <span>✍️ {article.author || 'Tim DEMA'}</span>
               <span>📅 {formatDate(article.publishedAt)}</span>
+              <span>⏱️ {readingTime} min read</span>
             </div>
           </div>
 
@@ -113,6 +118,9 @@ export default function ArticleDetailPage() {
             </div>
           )}
         </article>
+
+        {/* Reaction and Comment Box */}
+        <ReactionBox targetId={article.id} targetType="articles" />
 
         {/* Artikel terkait */}
         {related.length > 0 && (

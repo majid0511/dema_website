@@ -11,13 +11,13 @@
   }
 
   body {
-    @apply text-gray-700 antialiased;
+    @apply text-gray-700 antialiased transition-colors duration-300;
     overflow-x: hidden;
   }
 
   /* Heading default */
   h1, h2, h3, h4 {
-    @apply font-bold text-gray-800;
+    @apply font-bold text-gray-800 transition-colors duration-300;
   }
 
   /* Scrollbar kustom */
@@ -87,6 +87,27 @@
   @keyframes pulseGreen {
     0%, 100% { opacity: 1; }
     50%       { opacity: 0.5; }
+  }
+
+  /* View Transitions API */
+  ::view-transition-old(root) {
+    animation: 0.4s ease-out both fade-out, 0.4s ease-out both slide-to-left;
+  }
+  ::view-transition-new(root) {
+    animation: 0.4s ease-out both fade-in, 0.4s ease-out both slide-from-right;
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+  }
+  @keyframes fade-out {
+    to { opacity: 0; }
+  }
+  @keyframes slide-from-right {
+    from { transform: translateX(30px); }
+  }
+  @keyframes slide-to-left {
+    to { transform: translateX(-30px); }
   }
 }
 
