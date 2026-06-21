@@ -38,33 +38,6 @@ const AdminPrograms          = lazy(() => import('./pages/admin/ManagePrograms')
 const AdminEvents            = lazy(() => import('./pages/admin/ManageEvents'));
 const AdminAspirations       = lazy(() => import('./pages/admin/ManageAspirations'));
 
-import { flushSync } from 'react-dom';
-import { useLocation } from 'react-router-dom';
-
-function ViewTransitionRoutes({ children }) {
-  const location = useLocation();
-  const [displayLocation, setDisplayLocation] = useState(location);
-
-  if (location !== displayLocation) {
-    if (!document.startViewTransition) {
-      setDisplayLocation(location);
-    } else {
-      const transition = document.startViewTransition(() => {
-        flushSync(() => {
-          setDisplayLocation(location);
-        });
-      });
-      // Mencegah console error saat transisi di-skip (misal klik navigasi terlalu cepat)
-      const catchAbort = err => { if (err.name !== 'AbortError') console.error(err); };
-      transition.ready.catch(catchAbort);
-      transition.finished.catch(catchAbort);
-      transition.updateCallbackDone.catch(catchAbort);
-    }
-  }
-
-  return <Routes location={displayLocation}>{children}</Routes>;
-}
-
 export default function App() {
   const [isAppLoading, setIsAppLoading] = useState(true);
 
@@ -72,12 +45,13 @@ export default function App() {
     <NotificationProvider>
       {isAppLoading && <LoadingScreen onComplete={() => setIsAppLoading(false)} />}
       <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
+        <AnimatePresence mode="wait">
           <Suspense fallback={
             <div className="min-h-screen flex items-center justify-center">
               <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
           }>
-            <ViewTransitionRoutes>
+            <Routes>
             {/* ── PUBLIC ── */}
             <Route element={<PublicLayout />}>
               <Route path="/"                  element={<HomePage />} />
@@ -109,8 +83,9 @@ export default function App() {
               <Route path="kegiatan"          element={<AdminEvents />} />
               <Route path="aspirasi"          element={<AdminAspirations />} />
             </Route>
-            </ViewTransitionRoutes>
+            </Routes>
           </Suspense>
+        </AnimatePresence>
       <NotificationDashboard />
       <ConfirmDialog />
     </BrowserRouter>

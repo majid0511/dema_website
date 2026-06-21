@@ -88,27 +88,6 @@
     0%, 100% { opacity: 1; }
     50%       { opacity: 0.5; }
   }
-
-  /* View Transitions API */
-  ::view-transition-old(root) {
-    animation: 0.4s ease-out both fade-out, 0.4s ease-out both slide-to-left;
-  }
-  ::view-transition-new(root) {
-    animation: 0.4s ease-out both fade-in, 0.4s ease-out both slide-from-right;
-  }
-
-  @keyframes fade-in {
-    from { opacity: 0; }
-  }
-  @keyframes fade-out {
-    to { opacity: 0; }
-  }
-  @keyframes slide-from-right {
-    from { transform: translateX(30px); }
-  }
-  @keyframes slide-to-left {
-    to { transform: translateX(-30px); }
-  }
 }
 
 /* ===== FONT ARAB ===== */

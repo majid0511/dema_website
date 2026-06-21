@@ -1,11 +1,21 @@
 /**
- * Wrapper untuk setiap halaman.
- * Digunakan bersama View Transitions API di App.jsx.
+ * Wrapper animasi untuk setiap halaman.
+ * Bungkus konten halaman dengan komponen ini agar ada animasi fade saat navigasi.
  */
+import { motion } from 'framer-motion';
+
 export default function PageTransition({ children }) {
   return (
-    <div className="view-transition-wrapper">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{
+        duration: 0.4,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+    >
       {children}
-    </div>
+    </motion.div>
   );
 }
