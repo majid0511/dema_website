@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getAllGallery } from '../services/firestoreService';
+import { collection, query, orderBy, limit, startAfter, getDocs } from 'firebase/firestore';
+import { db } from '../firebase/firebaseConfig';
 import { formatDate } from '../utils/formatters';
 import PageTransition from '../components/PageTransition';
+
+const PAGE_SIZE = 12;
 
 export default function GalleryPage() {
   const [albums,   setAlbums]   = useState([]);
@@ -10,8 +13,39 @@ export default function GalleryPage() {
   const [selected, setSelected] = useState(null);   // Album yang dibuka
   const [lightbox, setLightbox] = useState(null);   // Foto yang di-zoom
 
+  // Pagination states
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const lastDocRef = useRef(null);
+
+  async function fetchInitial() {
+    setLoading(true);
+    const q = query(collection(db, 'gallery'), orderBy('eventDate', 'desc'), limit(PAGE_SIZE));
+    const snap = await getDocs(q);
+    setAlbums(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    lastDocRef.current = snap.docs[snap.docs.length - 1] ?? null;
+    setHasMore(snap.docs.length === PAGE_SIZE);
+    setLoading(false);
+  }
+
+  async function fetchMore() {
+    if (!hasMore || loadingMore || !lastDocRef.current) return;
+    setLoadingMore(true);
+    const q = query(
+      collection(db, 'gallery'), 
+      orderBy('eventDate', 'desc'), 
+      startAfter(lastDocRef.current), 
+      limit(PAGE_SIZE)
+    );
+    const snap = await getDocs(q);
+    setAlbums(prev => [...prev, ...snap.docs.map(d => ({ id: d.id, ...d.data() }))]);
+    lastDocRef.current = snap.docs[snap.docs.length - 1] ?? null;
+    setHasMore(snap.docs.length === PAGE_SIZE);
+    setLoadingMore(false);
+  }
+
   useEffect(() => {
-    getAllGallery().then(d => { setAlbums(d); setLoading(false); });
+    fetchInitial();
   }, []);
 
   return (
@@ -66,35 +100,50 @@ export default function GalleryPage() {
           </div>
         ) : (
           /* ── Grid album ── */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {albums.map((album, i) => (
-              <motion.div key={album.id}
-                initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }}
-                transition={{ delay: i * 0.06 }}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer
-                           hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group"
-                onClick={() => setSelected(album)}>
-                {/* Cover album */}
-                <div className="aspect-video bg-primary-50 overflow-hidden">
-                  {album.coverUrl ? (
-                    <img src={album.coverUrl} alt={album.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-5xl">📸</div>
-                  )}
-                </div>
-                {/* Info album */}
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-800 mb-1">{album.title}</h3>
-                  <div className="flex items-center justify-between text-xs text-gray-400">
-                    <span>{album.photos?.length || 0} foto</span>
-                    <span>{formatDate(album.eventDate, 'd MMM yyyy')}</span>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {albums.map((album, i) => (
+                <motion.div key={album.id}
+                  initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }}
+                  transition={{ delay: i * 0.06 }}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer
+                             hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group"
+                  onClick={() => setSelected(album)}>
+                  {/* Cover album */}
+                  <div className="aspect-video bg-primary-50 overflow-hidden">
+                    {album.coverUrl ? (
+                      <img src={album.coverUrl} alt={album.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-5xl">📸</div>
+                    )}
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                  {/* Info album */}
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-800 mb-1">{album.title}</h3>
+                    <div className="flex items-center justify-between text-xs text-gray-400">
+                      <span>{album.photos?.length || 0} foto</span>
+                      <span>{formatDate(album.eventDate, 'd MMM yyyy')}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Tombol Load More */}
+            {hasMore && (
+              <div className="text-center mt-10">
+                <button
+                  onClick={fetchMore}
+                  disabled={loadingMore}
+                  className="btn-outline disabled:opacity-50"
+                >
+                  {loadingMore ? 'Memuat...' : 'Muat Lebih Banyak'}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

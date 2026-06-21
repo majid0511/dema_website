@@ -3,7 +3,7 @@ import { siteConfig } from '../config/siteConfig';
 
 const BASE_URL = 'https://dema-stai-attahdzib.firebaseapp.com';
 
-export default function useSEO({ title, description, image, url }) {
+export default function SEO({ title, description, image, url }) {
   const siteName = siteConfig.demaName;
   const pageTitle = title ? `${title} | ${siteName}` : `${siteConfig.heroTitle} | ${siteName}`;
   const desc = description || siteConfig.heroSubtitle;

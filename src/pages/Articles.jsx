@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { getPublishedArticles } from '../services/firestoreService';
+import { collection, query, orderBy, limit, startAfter, getDocs, where } from 'firebase/firestore';
+import { db } from '../firebase/firebaseConfig';
 import PageTransition from '../components/PageTransition';
 import ArticleCard    from '../components/ArticleCard';
 
 const CATS = ['Semua', 'Berita', 'Opini', 'Kegiatan', 'Prestasi'];
+const PAGE_SIZE = 9;
 
 export default function ArticlesPage() {
   const [all,     setAll]     = useState([]);
@@ -12,8 +14,40 @@ export default function ArticlesPage() {
   const [search,  setSearch]  = useState('');
   const [cat,     setCat]     = useState('Semua');
 
+  // Pagination states
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const lastDocRef = useRef(null);
+
+  async function fetchInitial() {
+    setLoading(true);
+    const q = query(collection(db, 'articles'), where('isPublished', '==', true), orderBy('publishedAt', 'desc'), limit(PAGE_SIZE));
+    const snap = await getDocs(q);
+    setAll(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    lastDocRef.current = snap.docs[snap.docs.length - 1] ?? null;
+    setHasMore(snap.docs.length === PAGE_SIZE);
+    setLoading(false);
+  }
+
+  async function fetchMore() {
+    if (!hasMore || loadingMore || !lastDocRef.current) return;
+    setLoadingMore(true);
+    const q = query(
+      collection(db, 'articles'), 
+      where('isPublished', '==', true),
+      orderBy('publishedAt', 'desc'), 
+      startAfter(lastDocRef.current), 
+      limit(PAGE_SIZE)
+    );
+    const snap = await getDocs(q);
+    setAll(prev => [...prev, ...snap.docs.map(d => ({ id: d.id, ...d.data() }))]);
+    lastDocRef.current = snap.docs[snap.docs.length - 1] ?? null;
+    setHasMore(snap.docs.length === PAGE_SIZE);
+    setLoadingMore(false);
+  }
+
   useEffect(() => {
-    getPublishedArticles(50).then(d => { setAll(d); setLoading(false); });
+    fetchInitial();
   }, []);
 
   const filtered = all.filter(a => {
@@ -58,15 +92,30 @@ export default function ArticlesPage() {
             <p className="text-5xl mb-4">📭</p><p>Tidak ada artikel ditemukan</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filtered.map((a, i) => (
-              <motion.div key={a.id}
-                initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }}
-                transition={{ delay: i * 0.04 }}>
-                <ArticleCard article={a} />
-              </motion.div>
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filtered.map((a, i) => (
+                <motion.div key={a.id}
+                  initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }}
+                  transition={{ delay: i * 0.04 }}>
+                  <ArticleCard article={a} />
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Tombol Load More */}
+            {hasMore && (
+              <div className="text-center mt-10">
+                <button
+                  onClick={fetchMore}
+                  disabled={loadingMore}
+                  className="btn-outline disabled:opacity-50"
+                >
+                  {loadingMore ? 'Memuat...' : 'Muat Lebih Banyak'}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </PageTransition>

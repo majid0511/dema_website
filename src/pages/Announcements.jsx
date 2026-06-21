@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { getLatestAnnouncements } from '../services/firestoreService';
+import { collection, query, orderBy, limit, startAfter, getDocs } from 'firebase/firestore';
+import { db } from '../firebase/firebaseConfig';
 import PageTransition   from '../components/PageTransition';
 import SectionHeader    from '../components/SectionHeader';
 import AnnouncementCard from '../components/AnnouncementCard';
 
 const CATEGORIES = ['Semua', 'Akademik', 'Kegiatan', 'Umum', 'Penting'];
+const PAGE_SIZE = 9;
 
 export default function AnnouncementsPage() {
   const [all,      setAll]      = useState([]);
@@ -13,8 +15,39 @@ export default function AnnouncementsPage() {
   const [search,   setSearch]   = useState('');
   const [category, setCategory] = useState('Semua');
 
+  // Pagination states
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const lastDocRef = useRef(null);
+
+  async function fetchInitial() {
+    setLoading(true);
+    const q = query(collection(db, 'announcements'), orderBy('publishedAt', 'desc'), limit(PAGE_SIZE));
+    const snap = await getDocs(q);
+    setAll(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    lastDocRef.current = snap.docs[snap.docs.length - 1] ?? null;
+    setHasMore(snap.docs.length === PAGE_SIZE);
+    setLoading(false);
+  }
+
+  async function fetchMore() {
+    if (!hasMore || loadingMore || !lastDocRef.current) return;
+    setLoadingMore(true);
+    const q = query(
+      collection(db, 'announcements'), 
+      orderBy('publishedAt', 'desc'), 
+      startAfter(lastDocRef.current), 
+      limit(PAGE_SIZE)
+    );
+    const snap = await getDocs(q);
+    setAll(prev => [...prev, ...snap.docs.map(d => ({ id: d.id, ...d.data() }))]);
+    lastDocRef.current = snap.docs[snap.docs.length - 1] ?? null;
+    setHasMore(snap.docs.length === PAGE_SIZE);
+    setLoadingMore(false);
+  }
+
   useEffect(() => {
-    getLatestAnnouncements(50).then(data => { setAll(data); setLoading(false); });
+    fetchInitial();
   }, []);
 
   const filtered = all.filter(a => {
@@ -75,6 +108,19 @@ export default function AnnouncementsPage() {
                 </motion.div>
               ))}
             </div>
+            
+            {/* Tombol Load More */}
+            {hasMore && (
+              <div className="text-center mt-10">
+                <button
+                  onClick={fetchMore}
+                  disabled={loadingMore}
+                  className="btn-outline disabled:opacity-50"
+                >
+                  {loadingMore ? 'Memuat...' : 'Muat Lebih Banyak'}
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { collection, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
+import { getLatestAnnouncements, getPublishedArticles, getUpcomingEvents } from '../services/firestoreService';
 import { db } from '../firebase/firebaseConfig';
 import { siteConfig } from '../config/siteConfig';
 import PageTransition   from '../components/PageTransition';
@@ -9,7 +9,7 @@ import SectionHeader    from '../components/SectionHeader';
 import AnnouncementCard from '../components/AnnouncementCard';
 import ArticleCard      from '../components/ArticleCard';
 import EventCard        from '../components/EventCard';
-import useSEO from '../hooks/useSEO';
+import SEO from '../components/SEO';
 
 const QUICK_MENU = [
   { icon: '📢', label: 'Pengumuman',  path: '/pengumuman',    color: 'bg-blue-50   text-blue-700' },
@@ -51,14 +51,14 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchAll() {
       try {
-        const [annSnap, artSnap, evtSnap] = await Promise.all([
-          getDocs(query(collection(db, 'announcements'), orderBy('publishedAt', 'desc'), limit(3))),
-          getDocs(query(collection(db, 'articles'), where('isPublished', '==', true), orderBy('publishedAt', 'desc'), limit(3))),
-          getDocs(query(collection(db, 'events'), where('status', '==', 'upcoming'), orderBy('startDate', 'asc'), limit(3))),
+        const [annData, artData, evtData] = await Promise.all([
+          getLatestAnnouncements(3),
+          getPublishedArticles(3),
+          getUpcomingEvents(3),
         ]);
-        setAnnouncements(annSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-        setArticles(artSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-        setEvents(evtSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        setAnnouncements(annData);
+        setArticles(artData);
+        setEvents(evtData);
       } catch (e) {
         console.error('Gagal fetch beranda:', e);
       } finally {
@@ -70,10 +70,10 @@ export default function HomePage() {
 
   return (
     <>
-      {useSEO({
-        title: siteConfig.heroTitle,
-        description: siteConfig.heroSubtitle,
-      })}
+      <SEO
+        title={siteConfig.heroTitle}
+        description={siteConfig.heroSubtitle}
+      />
     <PageTransition>
 
       {/* ═══ HERO ═══ */}

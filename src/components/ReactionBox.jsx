@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, limit, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { formatDate } from '../utils/formatters';
 
@@ -18,6 +18,7 @@ export default function ReactionBox({ targetId, targetType }) {
   const [name, setName] = useState('');
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [commentError, setCommentError] = useState('');
 
   useEffect(() => {
     // Load existing reaction from localStorage
@@ -90,8 +91,25 @@ export default function ReactionBox({ targetId, targetType }) {
     e.preventDefault();
     if (!name.trim() || !commentText.trim()) return;
 
+    setCommentError('');
     setIsSubmitting(true);
     try {
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+      const recentQuery = query(
+        collection(db, 'comments'),
+        where('targetId', '==', targetId),
+        where('targetType', '==', targetType),
+        where('name', '==', name.trim()),
+        where('createdAt', '>=', Timestamp.fromDate(tenMinutesAgo)),
+        limit(1)
+      );
+      const recentSnap = await getDocs(recentQuery);
+      if (!recentSnap.empty) {
+        setCommentError('Anda sudah mengirim komentar baru-baru ini. Coba lagi dalam beberapa menit.');
+        setIsSubmitting(false);
+        return;
+      }
+
       const newComment = {
         targetId,
         targetType,
@@ -126,7 +144,7 @@ export default function ReactionBox({ targetId, targetType }) {
             className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${
               userReaction === r.id 
                 ? 'bg-primary-50 border-primary-300 text-primary-700' 
-                : 'border-gray-200 hover:bg-gray-50:bg-gray-700 text-gray-600'
+                : 'border-gray-200 hover:bg-gray-100 text-gray-600'
             } ${userReaction && userReaction !== r.id ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <span className="text-xl">{r.emoji}</span>
@@ -165,6 +183,7 @@ export default function ReactionBox({ targetId, targetType }) {
         >
           {isSubmitting ? 'Mengirim...' : 'Kirim Komentar'}
         </button>
+        {commentError && <p className="text-red-500 text-sm mt-3">{commentError}</p>}
       </form>
 
       {/* Comment List */}

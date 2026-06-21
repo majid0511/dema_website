@@ -37,7 +37,7 @@ export default function Navbar() {
     `px-3 py-2 rounded-lg text-sm font-medium transition-all ${
       isActive
         ? 'text-primary-600 bg-primary-50 font-medium'
-        : 'text-gray-600 hover:text-primary-600 hover:bg-primary-50:bg-gray-800:text-primary-400'
+        : 'text-gray-600 hover:text-primary-600 hover:bg-primary-50'
     }`;
 
   return (
@@ -76,7 +76,7 @@ export default function Navbar() {
                   <button
                     onClick={() => setDropdown(dropdown === item.label ? null : item.label)}
                     className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-gray-600
-                               hover:text-primary-600 hover:bg-primary-50:bg-gray-800:text-primary-400 transition-all"
+                               hover:text-primary-600 hover:bg-primary-50 transition-all"
                     aria-expanded={dropdown === item.label}
                   >
                     {item.label}
@@ -95,7 +95,7 @@ export default function Navbar() {
                             key={c.path} to={c.path}
                             className={({ isActive }) =>
                               `block px-4 py-2.5 text-sm transition-colors ${
-                                isActive ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-50:bg-gray-700'
+                                isActive ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:bg-gray-100'
                               }`
                             }
                           >

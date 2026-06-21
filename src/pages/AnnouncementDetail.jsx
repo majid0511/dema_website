@@ -4,7 +4,7 @@ import { getOne } from '../services/firestoreService';
 import { formatDate } from '../utils/formatters';
 import PageTransition from '../components/PageTransition';
 import ReactionBox from '../components/ReactionBox';
-import useSEO from '../hooks/useSEO';
+import SEO from '../components/SEO';
 
 export default function AnnouncementDetailPage() {
   const { id }          = useParams();
@@ -34,12 +34,12 @@ export default function AnnouncementDetailPage() {
 
   return (
     <>
-      {useSEO({
-        title: ann.title,
-        description: metaDesc,
-        image: ann.imageUrl,
-        url: `/pengumuman/${ann.id}`,
-      })}
+      <SEO
+        title={ann.title}
+        description={metaDesc}
+        image={ann.imageUrl}
+        url={`/pengumuman/${ann.id}`}
+      />
     <PageTransition>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
 

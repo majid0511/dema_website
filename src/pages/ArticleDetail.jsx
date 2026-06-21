@@ -6,7 +6,7 @@ import { formatDate } from '../utils/formatters';
 import PageTransition from '../components/PageTransition';
 import ArticleCard    from '../components/ArticleCard';
 import ReactionBox    from '../components/ReactionBox';
-import useSEO from '../hooks/useSEO';
+import SEO from '../components/SEO';
 
 export default function ArticleDetailPage() {
   const { slug }           = useParams();
@@ -56,12 +56,12 @@ export default function ArticleDetailPage() {
 
   return (
     <>
-      {useSEO({
-        title: article.title,
-        description: metaDesc,
-        image: article.thumbnailUrl,
-        url: `/artikel/${article.slug || article.id}`,
-      })}
+      <SEO
+        title={article.title}
+        description={metaDesc}
+        image={article.thumbnailUrl}
+        url={`/artikel/${article.slug || article.id}`}
+      />
     <PageTransition>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
 

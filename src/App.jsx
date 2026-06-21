@@ -9,6 +9,7 @@ import PublicLayout  from './layouts/PublicLayout';
 // import AdminLayout   from './layouts/AdminLayout';
 // import AdminRoute    from './components/AdminRoute';
 import LoadingScreen from './components/LoadingScreen';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy load Public pages
 const HomePage               = lazy(() => import('./pages/Home'));
@@ -46,7 +47,8 @@ export default function App() {
       {isAppLoading && <LoadingScreen onComplete={() => setIsAppLoading(false)} />}
       <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
         <AnimatePresence mode="wait">
-          <Suspense fallback={
+          <ErrorBoundary>
+            <Suspense fallback={
             <div className="min-h-screen flex items-center justify-center">
               <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
@@ -84,7 +86,8 @@ export default function App() {
               <Route path="aspirasi"          element={<AdminAspirations />} />
             </Route>
             </Routes>
-          </Suspense>
+            </Suspense>
+          </ErrorBoundary>
         </AnimatePresence>
       <NotificationDashboard />
       <ConfirmDialog />
