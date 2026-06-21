@@ -10,6 +10,7 @@ import AnnouncementCard from '../components/AnnouncementCard';
 import ArticleCard      from '../components/ArticleCard';
 import EventCard        from '../components/EventCard';
 import SEO from '../components/SEO';
+import PrayerCountdownWidget from '../components/PrayerCountdownWidget';
 
 const QUICK_MENU = [
   { icon: '📢', label: 'Pengumuman',  path: '/pengumuman',    color: 'bg-blue-50   text-blue-700' },
@@ -159,6 +160,13 @@ export default function HomePage() {
               </motion.div>
             ))}
           </motion.div>
+        </div>
+      </section>
+
+      {/* ═══ PRAYER & COUNTDOWN ═══ */}
+      <section className="py-10 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <PrayerCountdownWidget />
         </div>
       </section>
 
