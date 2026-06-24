@@ -6,7 +6,7 @@ import { useNotify } from '../../utils/useNotify';
 import { useConfirm } from '../../utils/useConfirm';
 import ImageUpload from '../../components/ImageUpload';
 import RichTextEditor from '../../components/RichTextEditor';
-import sendPushNotification from '../../services/sendNotification';
+// ✅ import sendPushNotification dihapus — notif dikirim otomatis via Cloud Function
 
 const EMPTY = { title:'', slug:'', excerpt:'', content:'', category:'berita', author:'', thumbnailUrl:'', isPublished:false, tags:'' };
 
@@ -45,13 +45,8 @@ export default function AdminArticles() {
         const id = await create('articles', data);
         setItems(prev => [{ id, ...data }, ...prev]);
         notifySuccess('Artikel ditambahkan', 'Berhasil');
-        if (data.isPublished) {
-          sendPushNotification({
-            title: '📰 Artikel Baru',
-            body: data.title,
-            url: `/artikel/${data.slug || id}`,
-          });
-        }
+        // ✅ sendPushNotification() dihapus — Cloud Function otomatis kirim notif
+        //    saat dokumen baru masuk Firestore collection 'articles'
       }
       closeForm();
     } catch (err) { notifyError('Gagal menyimpan', err.message); }
