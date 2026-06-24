@@ -25,6 +25,7 @@ const GalleryPage            = lazy(() => import('./pages/Gallery'));
 const AspirationsPage        = lazy(() => import('./pages/Aspirations'));
 const ContactPage            = lazy(() => import('./pages/Contact'));
 const EventCheckinPage       = lazy(() => import('./pages/EventCheckin'));
+const NotFoundPage           = lazy(() => import('./pages/NotFound'));
 
 // Lazy load Admin pages
 const AdminRoute             = lazy(() => import('./components/AdminRoute'));
@@ -84,6 +85,11 @@ export default function App() {
               <Route path="program"           element={<AdminPrograms />} />
               <Route path="kegiatan"          element={<AdminEvents />} />
               <Route path="aspirasi"          element={<AdminAspirations />} />
+            </Route>
+
+            {/* ── 404 ── */}
+            <Route path="*" element={<PublicLayout />}>
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
             </Routes>
             </Suspense>

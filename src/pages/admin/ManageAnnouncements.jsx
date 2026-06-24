@@ -95,9 +95,13 @@ export default function AdminAnnouncements() {
                 </div>
                 <div className="flex items-end pb-1">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={form.isUrgent} onChange={e => setForm({...form, isUrgent:e.target.checked})}
-                      className="w-4 h-4 accent-primary-500" />
-                    <span className="text-sm font-medium text-gray-700">Tandai Penting</span>
+                    <input
+                      type="checkbox"
+                      checked={form.isUrgent}
+                      onChange={(e) => setForm(p => ({ ...p, isUrgent: e.target.checked }))}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Tandai Penting & Tampil di Ticker</span>
                   </label>
                 </div>
               </div>

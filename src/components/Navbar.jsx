@@ -10,6 +10,7 @@ import { siteConfig } from '../config/siteConfig';
 import { HiChevronDown } from 'react-icons/hi';
 import StaggeredMenu from './StaggeredMenu';
 import NotificationBell from './NotificationBell';
+import AnnouncementTicker from './AnnouncementTicker';
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [dropdown, setDropdown] = useState(null);
@@ -158,6 +159,7 @@ export default function Navbar() {
       </div>
 
       {/* Mobile nav is handled by StaggeredMenu (fixed overlay panel) */}
+      <AnnouncementTicker />
     </nav>
   );
 }

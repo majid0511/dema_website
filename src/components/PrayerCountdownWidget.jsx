@@ -124,26 +124,30 @@ export default function PrayerCountdownWidget() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 animate-pulse flex flex-col md:flex-row gap-6">
+      <div className="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-8 animate-pulse flex flex-col md:flex-row gap-5 sm:gap-6">
         <div className="flex-1 space-y-4">
-          <div className="h-6 bg-gray-200 rounded w-1/2 mb-6"></div>
-          <div className="flex justify-between">
-             <div className="h-10 bg-gray-200 rounded w-12"></div>
-             <div className="h-10 bg-gray-200 rounded w-12"></div>
-             <div className="h-10 bg-gray-200 rounded w-12"></div>
-             <div className="h-10 bg-gray-200 rounded w-12"></div>
-             <div className="h-10 bg-gray-200 rounded w-12"></div>
+          <div className="h-5 sm:h-6 bg-gray-200 rounded w-2/3 sm:w-1/2 mb-4 sm:mb-6"></div>
+          <div className="flex gap-2 justify-between">
+             {[1,2,3,4,5].map(i => <div key={i} className="h-14 sm:h-16 bg-gray-200 rounded-xl flex-1"></div>)}
           </div>
         </div>
-        <div className="w-px bg-gray-100 hidden md:block"></div>
-        <div className="md:w-1/3 space-y-4">
-          <div className="h-6 bg-gray-200 rounded w-2/3 mb-4"></div>
+        <div className="w-full h-px md:w-px md:h-auto bg-gray-100"></div>
+        <div className="md:w-1/3 space-y-3 sm:space-y-4">
+          <div className="h-5 sm:h-6 bg-gray-200 rounded w-2/3 mb-3 sm:mb-4"></div>
           <div className="h-4 bg-gray-200 rounded w-full"></div>
-          <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+          <div className="flex gap-2">{[1,2,3,4].map(i => <div key={i} className="h-12 sm:h-14 bg-gray-200 rounded-xl flex-1"></div>)}</div>
         </div>
       </div>
     );
   }
+
+  const prayerItems = [
+    { id: 'subuh', label: 'Subuh', time: prayer?.subuh },
+    { id: 'dzuhur', label: 'Dzuhur', time: prayer?.dzuhur },
+    { id: 'ashar', label: 'Ashar', time: prayer?.ashar },
+    { id: 'maghrib', label: 'Maghrib', time: prayer?.maghrib },
+    { id: 'isya', label: 'Isya', time: prayer?.isya },
+  ];
 
   return (
     <motion.div 
@@ -151,55 +155,56 @@ export default function PrayerCountdownWidget() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="relative overflow-hidden bg-gradient-to-br from-white to-gray-50/80 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white p-6 sm:p-10 backdrop-blur-xl"
+      className="relative overflow-hidden bg-gradient-to-br from-white to-gray-50/80 rounded-2xl sm:rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white p-4 sm:p-8 lg:p-10 backdrop-blur-xl"
     >
       {/* Dekorasi Abstract Blob */}
-      <div className="absolute -top-32 -right-32 w-64 h-64 bg-primary-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
-      <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-yellow-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+      <div className="absolute -top-32 -right-32 w-48 sm:w-64 h-48 sm:h-64 bg-primary-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40 sm:opacity-50 animate-blob"></div>
+      <div className="absolute -bottom-32 -left-32 w-48 sm:w-64 h-48 sm:h-64 bg-yellow-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40 sm:opacity-50 animate-blob animation-delay-2000"></div>
 
-      <div className="relative z-10 flex flex-col md:flex-row gap-8 lg:gap-12">
-        {/* KIRI: Jadwal Sholat */}
-        <div className="flex-1">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 bg-primary-50 rounded-2xl flex items-center justify-center text-primary-600 text-2xl shadow-sm border border-primary-100/50">
+      <div className="relative z-10 flex flex-col md:flex-row gap-5 sm:gap-8 lg:gap-12">
+
+        {/* ─── KIRI: Jadwal Sholat ─── */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-8">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-50 rounded-xl sm:rounded-2xl flex items-center justify-center text-primary-600 text-xl sm:text-2xl shadow-sm border border-primary-100/50 flex-shrink-0">
               🕌
             </div>
-            <div>
-              <h3 className="font-extrabold text-gray-800 text-lg tracking-tight">Jadwal Sholat <span className="text-primary-600">— Jombang</span></h3>
-              <p className="text-sm font-medium text-gray-500 mt-0.5">
+            <div className="min-w-0">
+              <h3 className="font-extrabold text-gray-800 text-base sm:text-lg tracking-tight">
+                Jadwal Sholat <span className="text-primary-600 hidden xs:inline">— Jombang</span>
+              </h3>
+              <p className="text-xs sm:text-sm font-medium text-gray-500 mt-0.5 truncate">
                 {prayer?.tanggal || formatDate(new Date(), 'EEEE, d MMMM yyyy')}
               </p>
             </div>
           </div>
 
           {error || !prayer ? (
-            <div className="bg-red-50 text-red-500 p-4 rounded-xl text-sm text-center border border-red-100">
+            <div className="bg-red-50 text-red-500 p-3 sm:p-4 rounded-xl text-xs sm:text-sm text-center border border-red-100">
               Jadwal tidak tersedia saat ini.
             </div>
           ) : (
-            <div className="grid grid-cols-5 gap-2 sm:gap-3 text-center overflow-x-auto pt-4 pb-4 -mt-4 hide-scrollbar">
-              {[
-                { id: 'subuh', label: 'Subuh', time: prayer.subuh },
-                { id: 'dzuhur', label: 'Dzuhur', time: prayer.dzuhur },
-                { id: 'ashar', label: 'Ashar', time: prayer.ashar },
-                { id: 'maghrib', label: 'Maghrib', time: prayer.maghrib },
-                { id: 'isya', label: 'Isya', time: prayer.isya },
-              ].map(p => {
+            <div className="flex gap-1.5 sm:gap-3 overflow-x-auto pt-4 pb-2 -mt-4 hide-scrollbar snap-x snap-mandatory">
+              {prayerItems.map(p => {
                 const isActive = activePrayer === p.label;
                 const isNext = nextPrayer === p.label;
                 return (
                   <motion.div 
                     key={p.id} 
                     whileHover={{ y: -4 }}
-                    className={`flex flex-col items-center justify-center py-4 px-1 rounded-2xl transition-all duration-300 min-w-[70px] sm:min-w-[80px] relative
+                    className={`flex flex-col items-center justify-center py-2.5 sm:py-4 px-2 sm:px-3 rounded-xl sm:rounded-2xl transition-all duration-300 min-w-[56px] sm:min-w-[80px] flex-1 relative snap-center
                       ${isActive 
-                        ? 'bg-primary-600 text-white shadow-[0_8px_20px_rgb(22,92,61,0.3)] scale-105 z-10 border border-primary-500' 
-                        : 'bg-white text-gray-700 shadow-[0_2px_12px_rgb(0,0,0,0.04)] border border-gray-50 hover:shadow-md'}`}
+                        ? 'bg-primary-600 text-white shadow-[0_6px_16px_rgb(22,92,61,0.3)] sm:shadow-[0_8px_20px_rgb(22,92,61,0.3)] scale-[1.03] sm:scale-105 z-10 border border-primary-500' 
+                        : 'bg-white text-gray-700 shadow-[0_2px_8px_rgb(0,0,0,0.03)] sm:shadow-[0_2px_12px_rgb(0,0,0,0.04)] border border-gray-100/80 sm:border-gray-50 hover:shadow-md'}`}
                   >
-                    <span className={`text-[11px] sm:text-xs font-semibold mb-1 uppercase tracking-wider ${isActive ? 'text-primary-100' : 'text-gray-400'}`}>{p.label}</span>
-                    <span className={`font-bold text-xl tracking-tight ${isActive ? 'text-white' : 'text-gray-800'}`}>{p.time}</span>
+                    <span className={`text-[10px] sm:text-xs font-semibold mb-0.5 sm:mb-1 uppercase tracking-wide sm:tracking-wider ${isActive ? 'text-primary-100' : 'text-gray-400'}`}>
+                      {p.label}
+                    </span>
+                    <span className={`font-bold text-base sm:text-xl tracking-tight ${isActive ? 'text-white' : 'text-gray-800'}`}>
+                      {p.time}
+                    </span>
                     {isNext && (
-                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-yellow-200 shadow-sm">
+                      <span className="absolute -top-2.5 sm:-top-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-yellow-100 text-yellow-700 text-[8px] sm:text-[10px] font-bold px-1.5 sm:px-2.5 py-px sm:py-0.5 rounded-full border border-yellow-200 shadow-sm">
                         Berikutnya
                       </span>
                     )}
@@ -210,62 +215,51 @@ export default function PrayerCountdownWidget() {
           )}
         </div>
 
-        {/* DIVIDER */}
-        <div className="w-full h-px md:w-px md:h-auto bg-gradient-to-b from-transparent via-gray-200 to-transparent opacity-60"></div>
+        {/* ─── DIVIDER ─── */}
+        <div className="w-full h-px md:w-px md:h-auto bg-gradient-to-r md:bg-gradient-to-b from-transparent via-gray-200 to-transparent opacity-60"></div>
 
-        {/* KANAN: Countdown Kegiatan */}
+        {/* ─── KANAN: Countdown Kegiatan ─── */}
         <div className="md:w-[35%] lg:w-1/3 flex flex-col justify-center">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 bg-yellow-50 rounded-2xl flex items-center justify-center text-yellow-600 text-2xl shadow-sm border border-yellow-100/50">
+          <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-50 rounded-xl sm:rounded-2xl flex items-center justify-center text-yellow-600 text-xl sm:text-2xl shadow-sm border border-yellow-100/50 flex-shrink-0">
               📅
             </div>
-            <h3 className="font-extrabold text-gray-800 text-lg tracking-tight">Kegiatan Terdekat</h3>
+            <h3 className="font-extrabold text-gray-800 text-base sm:text-lg tracking-tight">Kegiatan Terdekat</h3>
           </div>
 
           {event ? (
             <div className="group">
-              <p className="font-bold text-gray-800 mb-5 truncate text-lg transition-colors group-hover:text-primary-600" title={event.title}>{event.title}</p>
+              <p className="font-bold text-gray-800 mb-3 sm:mb-5 truncate text-sm sm:text-lg transition-colors group-hover:text-primary-600" title={event.title}>{event.title}</p>
               
               {countdown.done ? (
-                <div className="inline-flex items-center justify-center gap-2 bg-green-50 text-green-600 font-bold px-4 py-3 rounded-xl border border-green-100 w-full">
+                <div className="inline-flex items-center justify-center gap-2 bg-green-50 text-green-600 font-bold px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border border-green-100 w-full text-xs sm:text-sm">
                   <span>✅</span> Berlangsung / Selesai
                 </div>
               ) : (
-                <div className="flex items-start gap-1.5 sm:gap-2">
-                  <div className="flex flex-col items-center flex-1">
-                    <div className="w-full aspect-square bg-white rounded-xl border border-gray-100 shadow-[0_2px_12px_rgb(0,0,0,0.04)] flex items-center justify-center">
-                      <span className="font-mono font-bold text-2xl text-primary-600">{countdown.d}</span>
+                <div className="flex items-start gap-1 sm:gap-2">
+                  {[
+                    { val: countdown.d, label: 'HARI', accent: true },
+                    { val: countdown.h, label: 'JAM' },
+                    { val: countdown.m, label: 'MNT' },
+                    { val: countdown.s, label: 'DTK' },
+                  ].map((seg, idx) => (
+                    <div key={seg.label} className="contents">
+                      {idx > 0 && <div className="pt-2 sm:pt-3 font-bold text-gray-300 text-sm sm:text-xl select-none">:</div>}
+                      <div className="flex flex-col items-center flex-1">
+                        <div className="w-full h-12 sm:h-16 bg-white rounded-lg sm:rounded-xl border border-gray-100 shadow-[0_2px_8px_rgb(0,0,0,0.03)] sm:shadow-[0_2px_12px_rgb(0,0,0,0.04)] flex items-center justify-center">
+                          <span className={`font-mono font-bold text-lg sm:text-2xl ${seg.accent ? 'text-primary-600' : 'text-gray-700'}`}>{seg.val}</span>
+                        </div>
+                        <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 mt-1 sm:mt-2 tracking-wider">{seg.label}</span>
+                      </div>
                     </div>
-                    <span className="text-[10px] font-bold text-gray-400 mt-2 tracking-wider">HARI</span>
-                  </div>
-                  <div className="pt-3 font-bold text-gray-300 text-xl">:</div>
-                  <div className="flex flex-col items-center flex-1">
-                    <div className="w-full aspect-square bg-white rounded-xl border border-gray-100 shadow-[0_2px_12px_rgb(0,0,0,0.04)] flex items-center justify-center">
-                      <span className="font-mono font-bold text-2xl text-gray-700">{countdown.h}</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-gray-400 mt-2 tracking-wider">JAM</span>
-                  </div>
-                  <div className="pt-3 font-bold text-gray-300 text-xl">:</div>
-                  <div className="flex flex-col items-center flex-1">
-                    <div className="w-full aspect-square bg-white rounded-xl border border-gray-100 shadow-[0_2px_12px_rgb(0,0,0,0.04)] flex items-center justify-center">
-                      <span className="font-mono font-bold text-2xl text-gray-700">{countdown.m}</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-gray-400 mt-2 tracking-wider">MNT</span>
-                  </div>
-                  <div className="pt-3 font-bold text-gray-300 text-xl">:</div>
-                  <div className="flex flex-col items-center flex-1">
-                    <div className="w-full aspect-square bg-white rounded-xl border border-gray-100 shadow-[0_2px_12px_rgb(0,0,0,0.04)] flex items-center justify-center">
-                      <span className="font-mono font-bold text-2xl text-gray-700">{countdown.s}</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-gray-400 mt-2 tracking-wider">DTK</span>
-                  </div>
+                  ))}
                 </div>
               )}
             </div>
           ) : (
-            <div className="flex items-center justify-center gap-3 text-gray-500 bg-gray-50/80 rounded-2xl p-6 border border-gray-100 border-dashed">
-              <span className="text-2xl opacity-50">📭</span>
-              <span className="text-sm font-medium">Tidak ada kegiatan terjadwal</span>
+            <div className="flex items-center justify-center gap-3 text-gray-500 bg-gray-50/80 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-100 border-dashed">
+              <span className="text-xl sm:text-2xl opacity-50">📭</span>
+              <span className="text-xs sm:text-sm font-medium">Tidak ada kegiatan terjadwal</span>
             </div>
           )}
         </div>
